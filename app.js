@@ -106,7 +106,7 @@ function renderBoard() {
     }
     boardEl.appendChild(r);
   });
-  answersInfo.textContent = `Số đáp án (ẩn): ${game.answers.length}. Người chơi nhập các từ tương ứng.`;
+  answersInfo.textContent = '';
 }
 
 function onBoardLetterClick(letter, cellEl){
