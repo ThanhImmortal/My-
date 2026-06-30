@@ -14,6 +14,7 @@ const roleSelect = document.getElementById('roleSelect');
 const loginName = document.getElementById('loginName');
 const loginBtn = document.getElementById('loginBtn');
 const logoutBtn = document.getElementById('logoutBtn');
+const STORAGE_KEY = 'mini-game-state-v1';
 
 let currentUser = {role: null, name: null};
 // Simple local admin password (change as you like)
@@ -62,6 +63,33 @@ let game = {
   grid: [],
   answers: [] // canonical lower-case list
 };
+
+function saveState(){
+  try {
+    const payload = {
+      adminInput: adminInput ? adminInput.value : '',
+      answersInput: answersInput ? answersInput.value : '',
+      game: { grid: game.grid, answers: game.answers }
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+  } catch (e) {}
+}
+
+function loadSavedState(){
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    if (data.adminInput !== undefined && adminInput) adminInput.value = data.adminInput;
+    if (data.answersInput !== undefined && answersInput) answersInput.value = data.answersInput;
+    if (data.game && Array.isArray(data.game.grid) && Array.isArray(data.game.answers)) {
+      game.grid = data.game.grid;
+      game.answers = data.game.answers;
+      return true;
+    }
+  } catch (e) {}
+  return false;
+}
 
 function parseAdmin(text) {
   text = text.trim();
@@ -121,15 +149,20 @@ function onBoardLetterClick(letter, cellEl){
 
 // composer selection removed; board clicks append to focused input
 
+adminInput.addEventListener('input', saveState);
+answersInput.addEventListener('input', saveState);
+
 loadBtn.addEventListener('click', ()=>{
   const parsed = parseAdmin(adminInput.value);
   game.grid = parsed.grid;
   game.answers = parsed.answers;
   renderBoard();
+  saveState();
 });
 
 clearBtn.addEventListener('click', ()=>{
-  adminInput.value=''; game.grid=[]; game.answers=[]; renderBoard();
+  adminInput.value=''; answersInput.value=''; game.grid=[]; game.answers=[]; renderBoard();
+  saveState();
 });
 
 // Players management
@@ -339,6 +372,10 @@ function updateScoreboard(){
 // initial render
 renderBoard();
 
-// convenience: prefill sample data for quick demo
-adminInput.value = JSON.stringify({grid:['KYTA','ENOC','COWR','LIME'], answers:['KYT','ONE','ROW']}, null, 2);
-loadBtn.click();
+if (loadSavedState()) {
+  renderBoard();
+} else {
+  // convenience: prefill sample data for quick demo
+  adminInput.value = JSON.stringify({grid:['KYTA','ENOC','COWR','LIME'], answers:['KYT','ONE','ROW']}, null, 2);
+  loadBtn.click();
+}
