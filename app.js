@@ -13,6 +13,7 @@ const roundTimer = document.getElementById('roundTimer');
 const DEFAULT_ROUND_SECS = 60;
 const roleSelect = document.getElementById('roleSelect');
 const loginName = document.getElementById('loginName');
+const adminPasswordInput = document.getElementById('adminPasswordInput');
 const loginBtn = document.getElementById('loginBtn');
 const logoutBtn = document.getElementById('logoutBtn');
 const STORAGE_KEY = 'mini-game-state-v1';
@@ -40,6 +41,7 @@ function loginAs(role, name){
     loginBtn.style.display='none'; logoutBtn.style.display='inline-block';
     if (name){ const exists = players.some(p=>p.name===name); if(!exists){ addPlayer(name); }}
   }
+  updateScoreboard();
   saveState();
 }
 
@@ -47,13 +49,24 @@ function logout(){
   currentUser = {role:null,name:null};
   setAdminVisibility(false);
   loginBtn.style.display='inline-block'; logoutBtn.style.display='none';
+  if (adminPasswordInput) adminPasswordInput.value = '';
+  updateScoreboard();
   saveState();
 }
+
+function updateLoginControls(){
+  if (adminPasswordInput) {
+    adminPasswordInput.style.display = roleSelect && roleSelect.value === 'admin' ? 'inline-block' : 'none';
+  }
+}
+
+roleSelect.addEventListener('change', updateLoginControls);
 
 loginBtn.addEventListener('click', ()=>{
   const role = roleSelect.value; const name = loginName.value.trim() || (role==='admin' ? 'Admin' : 'Khách');
   if (role==='admin'){
-    const pw = prompt('Nhập mật khẩu admin:');
+    const pw = adminPasswordInput ? adminPasswordInput.value : '';
+    if (!pw) { alert('Vui lòng nhập mật khẩu admin.'); return; }
     if (pw !== adminPassword){ alert('Mật khẩu không đúng.'); return; }
   }
   loginAs(role,name);
@@ -62,6 +75,7 @@ logoutBtn.addEventListener('click', ()=>{ logout(); });
 
 // default: hide admin-only until admin logs in
 setAdminVisibility(false);
+updateLoginControls();
 
 const DEFAULT_GAME_DATA = {
   grid: [
@@ -584,7 +598,27 @@ function renderPlayersFromState(){
 function updateScoreboard(){
   if (!scoreTableBody) return;
 
-  const ranked = [...players].sort((a,b)=>{
+  const noteEl = document.getElementById('scoreboardNote');
+  if (noteEl) {
+    noteEl.textContent = currentUser.role === 'admin'
+      ? 'Admin đang xem bảng xếp hạng chung của tất cả người chơi.'
+      : 'Bảng xếp hạng của các người chơi trong phiên này.';
+  }
+
+  const visiblePlayers = [...players];
+  if (currentUser.role === 'admin' && !visiblePlayers.some(p => p.name === currentUser.name)) {
+    visiblePlayers.push({
+      id: 'admin-view',
+      name: currentUser.name || 'Admin',
+      startedAt: null,
+      elapsed: 0,
+      score: 0,
+      done: false,
+      answers: []
+    });
+  }
+
+  const ranked = visiblePlayers.sort((a,b)=>{
     const doneCompare = Number(b.done) - Number(a.done);
     if (doneCompare !== 0) return doneCompare;
     if (b.done && a.done) {
