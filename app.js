@@ -36,15 +36,16 @@ function loginAs(role, name){
   } else {
     setAdminVisibility(false);
     loginBtn.style.display='none'; logoutBtn.style.display='inline-block';
-    // if guest, prefill player name and auto-add player if not exists
     if (name){ const exists = players.some(p=>p.name===name); if(!exists){ addPlayer(name); }}
   }
+  saveState();
 }
 
 function logout(){
   currentUser = {role:null,name:null};
   setAdminVisibility(false);
   loginBtn.style.display='inline-block'; logoutBtn.style.display='none';
+  saveState();
 }
 
 loginBtn.addEventListener('click', ()=>{
@@ -99,7 +100,12 @@ function saveState(){
     const payload = {
       adminInput: adminInput ? adminInput.value : '',
       answersInput: answersInput ? answersInput.value : '',
-      game: { grid: game.grid, answers: game.answers }
+      game: { grid: game.grid, answers: game.answers },
+      currentUser: { role: currentUser.role, name: currentUser.name },
+      players: players.map(p => ({ ...p, answers: [...(p.answers || [])] })),
+      nextPlayerId,
+      round: { active: round.active },
+      roundTimerText: roundTimer.textContent
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
   } catch (e) {}
@@ -115,8 +121,36 @@ function loadSavedState(){
     if (data.game && Array.isArray(data.game.grid) && Array.isArray(data.game.answers)) {
       game.grid = data.game.grid;
       game.answers = data.game.answers;
-      return true;
     }
+    if (data.currentUser) {
+      currentUser = { role: data.currentUser.role || null, name: data.currentUser.name || null };
+    }
+    if (Array.isArray(data.players)) {
+      players = data.players.map(p => ({ ...p, answers: [...(p.answers || [])] }));
+      nextPlayerId = typeof data.nextPlayerId === 'number' ? data.nextPlayerId : players.length + 1;
+      renderPlayersFromState();
+    }
+    if (data.round && data.round.active) {
+      round.active = true;
+      roundTimer.textContent = data.roundTimerText || 'Đang chơi';
+      setPlayerInputsEnabled(true);
+    } else {
+      round.active = false;
+      roundTimer.textContent = 'Sẵn sàng';
+      setPlayerInputsEnabled(false);
+    }
+    if (currentUser.role === 'admin') {
+      setAdminVisibility(true);
+      loginBtn.style.display='none'; logoutBtn.style.display='inline-block';
+    } else if (currentUser.role === 'guest' || currentUser.name) {
+      setAdminVisibility(false);
+      loginBtn.style.display='none'; logoutBtn.style.display='inline-block';
+    } else {
+      setAdminVisibility(false);
+      loginBtn.style.display='inline-block'; logoutBtn.style.display='none';
+    }
+    updateScoreboard();
+    return true;
   } catch (e) {}
   return false;
 }
@@ -360,6 +394,7 @@ function addPlayer(name){
   const card = createPlayerCard(p);
   playersEl.appendChild(card);
   updateScoreboard();
+  saveState();
   return p;
 }
 
@@ -409,6 +444,7 @@ function startRound(){
   roundTimer.textContent = `Đang chơi`;
   setPlayerInputsEnabled(true);
   updateScoreboard();
+  saveState();
 }
 
 // Play button removed; Start button of each player will start the round and that player's timer
@@ -424,19 +460,14 @@ function startPlayer(id, timerSpan){
   const p = players.find(x=>x.id===id); if(!p || p.done) return;
   if (p.startedAt) return; // already started
   p.startedAt = Date.now();
-  p.intervalId = setInterval(()=>{
-    const now = Date.now(); p.elapsed = now - p.startedAt; timerSpan.textContent = formatTime(p.elapsed);
-    updateScoreboard();
-  }, 50);
+  timerSpan.textContent = '00:00.000';
   updateScoreboard();
+  saveState();
 }
 
 function submitPlayer(id){
   const p = players.find(x=>x.id===id); if(!p || p.done) return;
-  // stop timer
-  if (p.intervalId) clearInterval(p.intervalId);
   if (p.startedAt) p.elapsed = Date.now() - p.startedAt; else p.elapsed = 0;
-  // gather answers from player's recorded answers (chips)
   const answersGiven = (p.answers || []).map(a=>String(a).toLowerCase());
 
   const remainingAnswers = [...game.answers];
@@ -449,12 +480,26 @@ function submitPlayer(id){
     }
   }
   p.score = correct; p.done = true;
-  // disable entry and chip remove buttons for this player
   const card = document.getElementById(`player-${id}`);
   const entry = card.querySelector('.player-answer-entry'); if (entry) entry.disabled = true;
   const removeBtns = card.querySelectorAll('.answer-chip .remove'); removeBtns.forEach(b=>b.disabled=true);
-  // mark card
   const title = card.querySelector('strong'); title.textContent = `${p.name} — Đã nộp`;
+  updateScoreboard();
+  saveState();
+}
+
+function renderPlayersFromState(){
+  playersEl.innerHTML = '';
+  players.forEach((p) => {
+    const card = createPlayerCard(p);
+    playersEl.appendChild(card);
+    const timerEl = card.querySelector('.timer');
+    if (timerEl) timerEl.textContent = (p.done || p.startedAt) ? formatTime(p.elapsed || 0) : '00:00.000';
+    const entryEl = card.querySelector('.player-answer-entry');
+    if (entryEl) entryEl.disabled = !(round.active && !p.done);
+    const titleEl = card.querySelector('strong');
+    if (titleEl && p.done) titleEl.textContent = `${p.name} — Đã nộp`;
+  });
   updateScoreboard();
 }
 
