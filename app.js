@@ -19,6 +19,7 @@ const STORAGE_KEY = 'mini-game-state-v1';
 const PROFILE_KEY = 'mini-game-profile-v1';
 
 let currentUser = {role: null, name: null};
+let autoSaveTimer = null;
 // Simple local admin password (change as you like)
 const adminPassword = 'admin123';
 // removed activeComposerId and composer-based input; board clicks append to focused input
@@ -116,6 +117,20 @@ function saveState(){
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     localStorage.setItem(PROFILE_KEY, JSON.stringify(payload.profile));
   } catch (e) {}
+}
+
+function startAutoSave(){
+  stopAutoSave();
+  autoSaveTimer = setInterval(() => {
+    saveState();
+  }, 1000);
+}
+
+function stopAutoSave(){
+  if (autoSaveTimer) {
+    clearInterval(autoSaveTimer);
+    autoSaveTimer = null;
+  }
 }
 
 function loadSavedState(){
@@ -351,7 +366,9 @@ function createPlayerCard(player) {
   card.appendChild(chipsWrap);
 
   // player answers array
-  player.answers = [];
+  if (!Array.isArray(player.answers)) {
+    player.answers = [];
+  }
 
   // handle Enter: add one answer as chip
   answerEntry.addEventListener('keydown', (ev)=>{
@@ -603,16 +620,19 @@ function updateScoreboard(){
 window.addEventListener('beforeunload', saveState);
 window.addEventListener('pagehide', saveState);
 
-// initial render
-renderBoard();
-
-if (loadSavedState()) {
+function initializeApp(){
   renderBoard();
-} else {
-  adminInput.value = JSON.stringify(DEFAULT_GAME_DATA, null, 2);
-  answersInput.value = DEFAULT_GAME_DATA.answers.join(', ');
-  game.grid = DEFAULT_GAME_DATA.grid;
-  game.answers = DEFAULT_GAME_DATA.answers;
-  renderBoard();
-  saveState();
+  if (loadSavedState()) {
+    renderBoard();
+  } else {
+    adminInput.value = JSON.stringify(DEFAULT_GAME_DATA, null, 2);
+    answersInput.value = DEFAULT_GAME_DATA.answers.join(', ');
+    game.grid = DEFAULT_GAME_DATA.grid;
+    game.answers = DEFAULT_GAME_DATA.answers;
+    renderBoard();
+    saveState();
+  }
+  startAutoSave();
 }
+
+document.addEventListener('DOMContentLoaded', initializeApp);
