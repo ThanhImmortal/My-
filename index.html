@@ -21,10 +21,11 @@
           <button id="loginBtn" class="btn">Đăng nhập</button>
           <button id="logoutBtn" class="btn" style="display:none">Đăng xuất</button>
         </div>
-        <div class="round-controls" style="display:flex;align-items:center;margin-left:12px">
+        <div class="round-controls" style="display:flex;align-items:center;margin-left:12px;flex-wrap:wrap;gap:8px">
           <div id="roundTimer" class="small">Sẵn sàng</div>
           <button id="loadBtn" class="btn admin-only">Load</button>
           <button id="clearBtn" class="btn admin-only">Clear</button>
+          <button id="resetBtn" class="btn">Reset</button>
         </div>
       </div>
     </header>
@@ -47,7 +48,7 @@
       <section id="scoreSection" class="card">
         <h3>Bảng xếp hạng</h3>
         <table id="scoreTable">
-          <thead><tr><th>#</th><th>Tên</th><th>Đúng</th><th>Thời gian</th></tr></thead>
+          <thead><tr><th>#</th><th>Tên</th><th>Đúng</th><th>Thời gian</th><th>Trạng thái</th></tr></thead>
           <tbody></tbody>
         </table>
       </section>

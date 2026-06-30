@@ -2,6 +2,7 @@
 const adminInput = document.getElementById('adminInput');
 const loadBtn = document.getElementById('loadBtn');
 const clearBtn = document.getElementById('clearBtn');
+const resetBtn = document.getElementById('resetBtn');
 const boardEl = document.getElementById('board');
 const answersInfo = document.getElementById('answersInfo');
 const answersInput = document.getElementById('answersInput');
@@ -249,6 +250,19 @@ clearBtn.addEventListener('click', ()=>{
   saveState();
 });
 
+resetBtn.addEventListener('click', ()=>{
+  if (confirm('Reset dữ liệu cũ và tải lại bảng mặc định?')) {
+    localStorage.removeItem(STORAGE_KEY);
+    adminInput.value = JSON.stringify(DEFAULT_GAME_DATA, null, 2);
+    answersInput.value = DEFAULT_GAME_DATA.answers.join(', ');
+    game.grid = DEFAULT_GAME_DATA.grid;
+    game.answers = DEFAULT_GAME_DATA.answers;
+    renderBoard();
+    saveState();
+    alert('Đã reset và tải lại bảng mặc định.');
+  }
+});
+
 // Players management
 let players = []; // {id,name,startedAt,intervalId,inputs,elapsed,score,done}
 let nextPlayerId = 1;
@@ -345,6 +359,7 @@ function addPlayer(name){
   players.push(p);
   const card = createPlayerCard(p);
   playersEl.appendChild(card);
+  updateScoreboard();
   return p;
 }
 
@@ -393,6 +408,7 @@ function startRound(){
   round.active = true;
   roundTimer.textContent = `Đang chơi`;
   setPlayerInputsEnabled(true);
+  updateScoreboard();
 }
 
 // Play button removed; Start button of each player will start the round and that player's timer
@@ -410,7 +426,9 @@ function startPlayer(id, timerSpan){
   p.startedAt = Date.now();
   p.intervalId = setInterval(()=>{
     const now = Date.now(); p.elapsed = now - p.startedAt; timerSpan.textContent = formatTime(p.elapsed);
+    updateScoreboard();
   }, 50);
+  updateScoreboard();
 }
 
 function submitPlayer(id){
@@ -441,15 +459,28 @@ function submitPlayer(id){
 }
 
 function updateScoreboard(){
-  // sort by score desc, time asc
-  const ranked = [...players].filter(p=>p.done).sort((a,b)=>{
-    if (b.score!==a.score) return b.score - a.score;
-    return a.elapsed - b.elapsed;
+  const ranked = [...players].sort((a,b)=>{
+    const doneCompare = Number(b.done) - Number(a.done);
+    if (doneCompare !== 0) return doneCompare;
+    if (b.done && a.done) {
+      if (b.score !== a.score) return b.score - a.score;
+      return a.elapsed - b.elapsed;
+    }
+    if (a.startedAt && b.startedAt) return a.elapsed - b.elapsed;
+    if (a.startedAt !== b.startedAt) return Number(!!b.startedAt) - Number(!!a.startedAt);
+    return a.name.localeCompare(b.name);
   });
+
   scoreTableBody.innerHTML='';
   ranked.forEach((p,i)=>{
+    let status = 'Chưa bắt đầu';
+    if (p.done) status = 'Đã nộp';
+    else if (p.startedAt) status = 'Đang chơi';
+
+    const scoreText = p.done ? p.score : '—';
+    const timeText = (p.done || p.startedAt) ? formatTime(p.elapsed || 0) : '—';
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${i+1}</td><td>${p.name}</td><td>${p.score}</td><td>${formatTime(p.elapsed)}</td>`;
+    tr.innerHTML = `<td>${i+1}</td><td>${p.name}</td><td>${scoreText}</td><td>${timeText}</td><td>${status}</td>`;
     scoreTableBody.appendChild(tr);
   });
 }
