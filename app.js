@@ -14,10 +14,6 @@ const roleSelect = document.getElementById('roleSelect');
 const loginName = document.getElementById('loginName');
 const loginBtn = document.getElementById('loginBtn');
 const logoutBtn = document.getElementById('logoutBtn');
-const shareBtn = document.getElementById('shareBtn');
-const qrModal = document.getElementById('qrModal');
-const qrImg = document.getElementById('qrImg');
-const qrClose = document.getElementById('qrClose');
 
 let currentUser = {role: null, name: null};
 // Simple local admin password (change as you like)
@@ -131,20 +127,6 @@ loadBtn.addEventListener('click', ()=>{
   game.answers = parsed.answers;
   renderBoard();
 });
-
-// Share (QR) handling: prompt for a URL (prefilled with current location) and show QR
-if (shareBtn){
-  shareBtn.addEventListener('click', ()=>{
-    const defaultUrl = window.location.href;
-    const url = prompt('URL to share (paste public/ngrok/LAN URL):', defaultUrl);
-    if (!url) return;
-    // Use free qrserver API to create QR image
-    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}`;
-    if (qrModal) qrModal.style.display='flex';
-  });
-  if (qrClose) qrClose.addEventListener('click', ()=>{ if (qrModal) qrModal.style.display='none'; });
-  if (qrModal) qrModal.addEventListener('click', (e)=>{ if (e.target===qrModal) qrModal.style.display='none'; });
-}
 
 clearBtn.addEventListener('click', ()=>{
   adminInput.value=''; game.grid=[]; game.answers=[]; renderBoard();

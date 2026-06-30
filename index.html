@@ -25,7 +25,6 @@
           <div id="roundTimer" class="small">Sẵn sàng</div>
           <button id="loadBtn" class="btn admin-only">Load</button>
           <button id="clearBtn" class="btn admin-only">Clear</button>
-          <button id="shareBtn" class="btn">Share (QR)</button>
         </div>
       </div>
     </header>
@@ -73,15 +72,3 @@
   <script src="app.js"></script>
 </body>
 </html>
-
-<!-- QR modal -->
-<div id="qrModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;z-index:999">
-  <div style="background:#071021;padding:18px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;align-items:center;gap:12px;max-width:90%;margin:auto">
-    <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
-      <strong style="color:#dff6ff">Share URL — QR</strong>
-      <button id="qrClose" class="btn">Close</button>
-    </div>
-    <img id="qrImg" src="" alt="QR" style="width:280px;height:280px;background:#fff;border-radius:6px" />
-    <div style="font-size:13px;color:#9aa4b2">Scan to open the shared URL</div>
-  </div>
-</div>
