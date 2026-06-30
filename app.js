@@ -16,6 +16,7 @@ const loginName = document.getElementById('loginName');
 const loginBtn = document.getElementById('loginBtn');
 const logoutBtn = document.getElementById('logoutBtn');
 const STORAGE_KEY = 'mini-game-state-v1';
+const PROFILE_KEY = 'mini-game-profile-v1';
 
 let currentUser = {role: null, name: null};
 // Simple local admin password (change as you like)
@@ -101,20 +102,38 @@ function saveState(){
       adminInput: adminInput ? adminInput.value : '',
       answersInput: answersInput ? answersInput.value : '',
       game: { grid: game.grid, answers: game.answers },
-      currentUser: { role: currentUser.role, name: currentUser.name },
+      profile: {
+        role: currentUser.role,
+        name: currentUser.name,
+        roleSelectValue: roleSelect ? roleSelect.value : 'guest',
+        loginNameValue: loginName ? loginName.value : ''
+      },
       players: players.map(p => ({ ...p, answers: [...(p.answers || [])] })),
       nextPlayerId,
       round: { active: round.active },
       roundTimerText: roundTimer.textContent
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(payload.profile));
   } catch (e) {}
 }
 
 function loadSavedState(){
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return false;
+    if (!raw) {
+      const profileRaw = localStorage.getItem(PROFILE_KEY);
+      if (profileRaw) {
+        const profile = JSON.parse(profileRaw);
+        if (profile) {
+          currentUser = { role: profile.role || null, name: profile.name || null };
+          if (roleSelect) roleSelect.value = profile.roleSelectValue || 'guest';
+          if (loginName) loginName.value = profile.loginNameValue || '';
+          return true;
+        }
+      }
+      return false;
+    }
     const data = JSON.parse(raw);
     if (data.adminInput !== undefined && adminInput) adminInput.value = data.adminInput;
     if (data.answersInput !== undefined && answersInput) answersInput.value = data.answersInput;
@@ -122,7 +141,11 @@ function loadSavedState(){
       game.grid = data.game.grid;
       game.answers = data.game.answers;
     }
-    if (data.currentUser) {
+    if (data.profile) {
+      currentUser = { role: data.profile.role || null, name: data.profile.name || null };
+      if (roleSelect) roleSelect.value = data.profile.roleSelectValue || 'guest';
+      if (loginName) loginName.value = data.profile.loginNameValue || '';
+    } else if (data.currentUser) {
       currentUser = { role: data.currentUser.role || null, name: data.currentUser.name || null };
     }
     if (Array.isArray(data.players)) {
@@ -529,6 +552,9 @@ function updateScoreboard(){
     scoreTableBody.appendChild(tr);
   });
 }
+
+window.addEventListener('beforeunload', saveState);
+window.addEventListener('pagehide', saveState);
 
 // initial render
 renderBoard();
