@@ -30,37 +30,33 @@
     </header>
 
     <div class="layout">
-      <aside class="sidebar">
-        <section id="admin" class="card admin-only">
-          <h3>Admin — Nạp bảng & đáp án</h3>
-          <textarea id="adminInput" placeholder="Nhập JSON hoặc mỗi dòng 1 hàng; dòng cuối là đáp án cách nhau bằng dấu phẩy / khoảng trắng"></textarea>
-          <input id="answersInput" type="text" placeholder="ví dụ: BEG, HIJ" style="width:100%;padding:8px;border-radius:6px;margin-top:6px">
-        </section>
+      <section id="boardSection" class="card board-card">
+        <h3>Bảng chữ</h3>
+        <div id="board" class="board"></div>
+        <div id="answersInfo" class="note"></div>
+      </section>
 
-        <section id="playerSection" class="card">
-          <h3>Người chơi</h3>
-          <div class="row">
-              <!-- player names come from login; no manual add -->
-            </div>
-          <div id="players" class="players-list"></div>
-        </section>
-      </aside>
+      <section id="playerSection" class="card">
+        <h3>Người chơi</h3>
+        <div class="row">
+          <!-- player names come from login; no manual add -->
+        </div>
+        <div id="players" class="players-list"></div>
+      </section>
 
-      <main class="main">
-        <section id="boardSection" class="card board-card">
-          <h3>Bảng chữ</h3>
-          <div id="board" class="board"></div>
-          <div id="answersInfo" class="note"></div>
-        </section>
+      <section id="scoreSection" class="card">
+        <h3>Bảng xếp hạng</h3>
+        <table id="scoreTable">
+          <thead><tr><th>#</th><th>Tên</th><th>Đúng</th><th>Thời gian</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </section>
 
-        <section id="scoreSection" class="card">
-          <h3>Bảng xếp hạng</h3>
-          <table id="scoreTable">
-            <thead><tr><th>#</th><th>Tên</th><th>Đúng</th><th>Thời gian</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </section>
-      </main>
+      <section id="admin" class="card admin-only">
+        <h3>Admin — Nạp bảng & đáp án</h3>
+        <textarea id="adminInput" placeholder="Nhập JSON hoặc mỗi dòng 1 hàng; dòng cuối là đáp án cách nhau bằng dấu phẩy / khoảng trắng"></textarea>
+        <input id="answersInput" type="text" placeholder="ví dụ: BEG, HIJ" style="width:100%;padding:8px;border-radius:6px;margin-top:6px">
+      </section>
     </div>
 
     <footer>

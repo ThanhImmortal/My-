@@ -16,7 +16,7 @@ body{font-family:Inter,Segoe UI,Arial,sans-serif;background:linear-gradient(180d
 .brand{font-weight:700;font-size:20px;color:var(--accent-2)}
 .actions .btn{margin-left:8px}
 
-.layout{display:grid;grid-template-columns:320px 1fr;gap:18px}
+.layout{display:flex;flex-direction:column;gap:12px}
 .sidebar{display:flex;flex-direction:column;gap:12px}
 .main{display:flex;flex-direction:column;gap:12px}
 
@@ -69,10 +69,8 @@ footer{margin-top:16px;color:var(--muted);font-size:13px}
 	.actions{width:100%}
 	.login{display:flex;flex-wrap:wrap;gap:8px;align-items:center;width:100%}
 	.login input{flex:1;min-width:140px}
-	.layout{grid-template-columns:1fr;}
+	.layout{display:flex;flex-direction:column;gap:10px}
 	.sidebar,.main{gap:10px}
-	.sidebar{order:2}
-	.main{order:1}
 	.board{width:100%;overflow-x:auto}
 	.board .row{justify-content:center}
 	.board .cell{width:40px;height:40px;margin:4px}
