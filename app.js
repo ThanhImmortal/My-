@@ -59,6 +59,35 @@ logoutBtn.addEventListener('click', ()=>{ logout(); });
 // default: hide admin-only until admin logs in
 setAdminVisibility(false);
 
+const DEFAULT_GAME_DATA = {
+  grid: [
+    'MDAODUCBAHG',
+    'TRACHNHIEMI',
+    'OCYBERDCEKA',
+    'TOEUHHIHDQD',
+    'HNUTIYUDGJI',
+    'EGTKETNOIMN',
+    'RNHHURUNKLH',
+    'OGUETLTGOET',
+    'JHOAHRACTQV',
+    'EENOAFJAEXT',
+    'POGVOCAMPBR',
+    'POPCORNIEAP'
+  ],
+  answers: [
+    'DAO DUC',
+    'TRACH NHIEM',
+    'GIA DINH',
+    'CONG NGHE',
+    'YEU THUONG',
+    'HIEU THAO',
+    'KET NOI',
+    'VO CAM',
+    'DONG CAM',
+    'GIAO TIEP'
+  ]
+};
+
 let game = {
   grid: [],
   answers: [] // canonical lower-case list
@@ -106,7 +135,7 @@ function normalizeAnswerForDisplay(text) {
     .replace(/(^|\s)([a-z])/g, (_, prefix, letter) => prefix + letter.toUpperCase());
 }
 
-function normalizeAnswerForComparison(text) {
+function getAnswerKey(text) {
   return normalizeAnswerText(text).split('').sort().join('');
 }
 
@@ -114,8 +143,14 @@ function isAnswerMatch(input, answer) {
   const normalizedInput = normalizeAnswerText(input);
   const normalizedAnswer = normalizeAnswerText(answer);
   if (!normalizedInput || !normalizedAnswer) return false;
+
   if (normalizedInput === normalizedAnswer) return true;
-  return normalizeAnswerForComparison(input) === normalizeAnswerForComparison(answer);
+
+  const keyInput = getAnswerKey(input);
+  const keyAnswer = getAnswerKey(answer);
+  if (!keyInput || !keyAnswer) return false;
+
+  return keyInput === keyAnswer;
 }
 
 function parseAnswerList(text) {
@@ -133,7 +168,7 @@ function parseAnswerList(text) {
   } catch (e) {}
 
   return trimmed
-    .split(/\n|,/)
+    .split(/\n|,|;|\||\//)
     .map(item => item.trim())
     .filter(Boolean);
 }
@@ -144,9 +179,12 @@ function parseAdmin(text) {
   try {
     const parsed = JSON.parse(text);
     if (parsed.grid && parsed.answers) {
+      const rawAnswers = Array.isArray(parsed.answers)
+        ? parsed.answers
+        : String(parsed.answers).split(/\n|,|;|\||\//);
       return {
         grid: Array.isArray(parsed.grid) ? parsed.grid.map(r=>String(r)) : [],
-        answers: Array.isArray(parsed.answers) ? parsed.answers.map(a=>String(a).trim()).filter(Boolean) : []
+        answers: rawAnswers.map(a=>String(a).trim()).filter(Boolean)
       };
     }
   } catch(e) {
@@ -422,7 +460,10 @@ renderBoard();
 if (loadSavedState()) {
   renderBoard();
 } else {
-  // convenience: prefill sample data for quick demo
-  adminInput.value = JSON.stringify({grid:['KYTA','ENOC','COWR','LIME'], answers:['KYT','ONE','ROW']}, null, 2);
-  loadBtn.click();
+  adminInput.value = JSON.stringify(DEFAULT_GAME_DATA, null, 2);
+  answersInput.value = DEFAULT_GAME_DATA.answers.join(', ');
+  game.grid = DEFAULT_GAME_DATA.grid;
+  game.answers = DEFAULT_GAME_DATA.answers;
+  renderBoard();
+  saveState();
 }
