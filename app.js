@@ -91,27 +91,73 @@ function loadSavedState(){
   return false;
 }
 
+function normalizeAnswerText(text) {
+  return String(text || '')
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '');
+}
+
+function normalizeAnswerForDisplay(text) {
+  return String(text || '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .replace(/(^|\s)([a-z])/g, (_, prefix, letter) => prefix + letter.toUpperCase());
+}
+
+function normalizeAnswerForComparison(text) {
+  return normalizeAnswerText(text).split('').sort().join('');
+}
+
+function isAnswerMatch(input, answer) {
+  const normalizedInput = normalizeAnswerText(input);
+  const normalizedAnswer = normalizeAnswerText(answer);
+  if (!normalizedInput || !normalizedAnswer) return false;
+  if (normalizedInput === normalizedAnswer) return true;
+  return normalizeAnswerForComparison(input) === normalizeAnswerForComparison(answer);
+}
+
+function parseAnswerList(text) {
+  if (!text) return [];
+  const trimmed = String(text).trim();
+  if (!trimmed) return [];
+  try {
+    const parsed = JSON.parse(trimmed);
+    if (Array.isArray(parsed)) {
+      return parsed.map(a => String(a).trim()).filter(Boolean);
+    }
+    if (parsed && Array.isArray(parsed.answers)) {
+      return parsed.answers.map(a => String(a).trim()).filter(Boolean);
+    }
+  } catch (e) {}
+
+  return trimmed
+    .split(/\n|,/)
+    .map(item => item.trim())
+    .filter(Boolean);
+}
+
 function parseAdmin(text) {
   text = text.trim();
   if (!text) return {grid:[], answers:[]};
   try {
     const parsed = JSON.parse(text);
     if (parsed.grid && parsed.answers) {
-      return {grid: parsed.grid.map(r=>String(r)), answers: parsed.answers.map(a=>String(a).toLowerCase())};
+      return {
+        grid: Array.isArray(parsed.grid) ? parsed.grid.map(r=>String(r)) : [],
+        answers: Array.isArray(parsed.answers) ? parsed.answers.map(a=>String(a).trim()).filter(Boolean) : []
+      };
     }
   } catch(e) {
-    // not JSON: try parse as lines: first N lines grid, last line answers comma separated
     const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
     if (lines.length===0) return {grid:[], answers:[]};
-    // heuristic: if last line contains comma or spaces and others are same length, treat last as answers
-    let maybeAnswers = [];
     const last = lines[lines.length-1];
-    if (last.includes(',') || last.split(' ').length>1) {
-      maybeAnswers = last.split(/[,\s]+/).filter(Boolean).map(a=>a.toLowerCase());
-      const grid = lines.slice(0,lines.length-1);
+    if (last.includes(',') || last.split(/\s+/).length>1) {
+      const maybeAnswers = parseAnswerList(lines.join('\n'));
+      const grid = lines.slice(0, lines.length-1);
       return {grid, answers:maybeAnswers};
     }
-    // otherwise all lines are grid rows
     return {grid: lines, answers: []};
   }
   return {grid:[], answers:[]};
@@ -289,10 +335,9 @@ function setPlayerInputsEnabled(enabled){
 
 function startRound(){
   if (round.active) return;
-  // read answers from answersInput (comma separated) if provided
   const ansText = (answersInput && answersInput.value.trim()) || '';
-  if (ansText){
-    game.answers = ansText.split(/[,\s]+/).filter(Boolean).map(a=>a.toLowerCase());
+  if (ansText) {
+    game.answers = parseAnswerList(ansText);
   }
   // reset player answers UI
   document.querySelectorAll('.player-card').forEach(card=>{
@@ -338,12 +383,14 @@ function submitPlayer(id){
   // gather answers from player's recorded answers (chips)
   const answersGiven = (p.answers || []).map(a=>String(a).toLowerCase());
 
-  // scoring: compare to game.answers (case-insensitive), each correct answer counts once
-  const remaining = [...game.answers];
+  const remainingAnswers = [...game.answers];
   let correct = 0;
-  for (const g of answersGiven){
-    const idx = remaining.indexOf(g);
-    if (idx!==-1){ correct++; remaining.splice(idx,1); }
+  for (const submittedAnswer of answersGiven) {
+    const matchIndex = remainingAnswers.findIndex(answer => isAnswerMatch(submittedAnswer, answer));
+    if (matchIndex !== -1) {
+      correct++;
+      remainingAnswers.splice(matchIndex, 1);
+    }
   }
   p.score = correct; p.done = true;
   // disable entry and chip remove buttons for this player
