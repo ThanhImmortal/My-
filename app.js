@@ -576,16 +576,23 @@ function submitPlayer(id){
     }
   }
   p.score = correct; p.done = true;
-  sb.from("scores").insert([
-  {
+  fetch("https://script.google.com/macros/s/AKfycbzgM1ZAOUm-veVrvZuwbcsETrXUOL8da0CpFhp6hMSujYOGAz2IobbaX0H0QmNy3Xph/exec", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
     player: p.name,
     score: p.score,
     time: p.elapsed
-  }
-])
-.then(({ error }) => {
-  if (error) console.error("Supabase lỗi:", error);
-  else console.log("Đã lưu điểm");
+  })
+})
+.then(r => r.text())
+.then(data => {
+  console.log("Đã lưu Google Sheet:", data);
+})
+.catch(err => {
+  console.error("Lỗi Google Sheet:", err);
 });
   const card = document.getElementById(`player-${id}`);
   const entry = card.querySelector('.player-answer-entry'); if (entry) entry.disabled = true;
