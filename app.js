@@ -231,7 +231,7 @@ function createPlayerCard(player) {
 
   // answer entry: single-answer input (press Enter to add), and chips list
   const entryLabel = document.createElement('div'); entryLabel.className='small'; entryLabel.style.marginTop='8px'; entryLabel.textContent = 'Nhập 1 đáp án rồi nhấn Enter';
-  const entryWrap = document.createElement('div'); entryWrap.style.display='flex'; entryWrap.style.gap='8px'; entryWrap.style.alignItems='center';
+  const entryWrap = document.createElement('div'); entryWrap.className='answer-entry-block'; entryWrap.style.display='flex'; entryWrap.style.gap='8px'; entryWrap.style.alignItems='center';
   const answerEntry = document.createElement('input'); answerEntry.type='text'; answerEntry.placeholder='Nhập 1 đáp án và nhấn Enter'; answerEntry.style.flex='1'; answerEntry.disabled = true; answerEntry.className='player-answer-entry';
   const chipsWrap = document.createElement('div'); chipsWrap.className='answers-chips'; chipsWrap.style.display='flex'; chipsWrap.style.flexWrap='wrap'; chipsWrap.style.gap='6px'; chipsWrap.style.marginTop='8px';
   entryWrap.appendChild(answerEntry);
