@@ -1,0 +1,72 @@
+:root{
+	--bg:#0f1724;
+	--card:#0b1220;
+	--muted:#9aa4b2;
+	--accent:#5eead4;
+	--accent-2:#60a5fa;
+	--glass: rgba(255,255,255,0.03);
+	--shadow: 0 8px 30px rgba(2,6,23,0.6);
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{font-family:Inter,Segoe UI,Arial,sans-serif;background:linear-gradient(180deg,#071024 0%,#071229 60%);color:#e6eef8;margin:0;padding:28px;}
+.container{max-width:1100px;margin:0 auto;background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));padding:20px;border-radius:14px;box-shadow:var(--shadow);border:1px solid rgba(255,255,255,0.03)}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 6px;margin-bottom:12px}
+.brand{font-weight:700;font-size:20px;color:var(--accent-2)}
+.actions .btn{margin-left:8px}
+
+.layout{display:grid;grid-template-columns:320px 1fr;gap:18px}
+.sidebar{display:flex;flex-direction:column;gap:12px}
+.main{display:flex;flex-direction:column;gap:12px}
+
+.card{background:var(--card);padding:14px;border-radius:10px;border:1px solid var(--glass);box-shadow:0 6px 18px rgba(2,6,23,0.4)}
+.card h3{margin:0 0 8px 0;color:#dff6ff}
+
+textarea{width:100%;height:120px;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));color:#eaf6ff;font-family:monospace}
+.row{display:flex;gap:8px;margin-top:8px}
+input[type=text], input[type=number]{padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#eaf6ff}
+.btn{padding:8px 12px;border-radius:8px;border:none;background:transparent;color:var(--accent);cursor:pointer;transition:all .15s ease}
+.btn:hover{transform:translateY(-2px)}
+.btn.primary{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#06202a;font-weight:700}
+
+.players-list{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.player-card{display:flex;flex-direction:column;padding:10px;border-radius:8px;background:linear-gradient(180deg, rgba(255,255,255,0.016), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02)}
+.player-controls{display:flex;gap:8px;align-items:center}
+.word-inputs{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.word-inputs input{width:160px;padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:#eaf6ff}
+
+.board-card{display:flex;flex-direction:column;align-items:flex-start}
+.board{display:inline-block;border-radius:10px;padding:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));}
+.board .row{display:flex}
+.board .cell{width:48px;height:48px;border-radius:6px;margin:6px;display:flex;align-items:center;justify-content:center;font-weight:700;background:linear-gradient(180deg,#0b1620,#081018);border:1px solid rgba(255,255,255,0.04);color:#dff6ff;box-shadow:0 6px 14px rgba(2,6,23,0.6);transition:transform .12s ease}
+.board .cell:hover{transform:translateY(-4px)}
+
+.note{color:var(--muted);font-size:13px;margin-top:8px}
+table{width:100%;border-collapse:collapse;margin-top:8px;background:transparent}
+th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,0.03);text-align:left}
+thead th{color:var(--accent-2);font-weight:700}
+
+footer{margin-top:16px;color:var(--muted);font-size:13px}
+.timer{font-weight:700;color:var(--accent)}
+.hidden-round-timer{display:none}
+#roundTimer{display:none}
+.small{font-size:13px;color:var(--muted)}
+
+/* answer chips */
+.answers-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.answer-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border-radius:14px;background:rgba(255,255,255,0.04);color:#e6f8ff;font-weight:600;border:1px solid rgba(255,255,255,0.03)}
+.answer-chip .remove{background:transparent;border:none;color:#ffb4b4;cursor:pointer;padding:0 4px;font-weight:700}
+.answer-chip .remove:disabled{opacity:0.4;cursor:not-allowed}
+
+/* assembly boxes */
+.player-card.active-composer{outline:2px solid rgba(96,165,250,0.14);box-shadow:0 8px 24px rgba(8,18,32,0.45)}
+
+@media(max-width:880px){
+	.layout{grid-template-columns:1fr;}
+	.board .cell{width:42px;height:42px;margin:4px}
+}
+
+/* QR modal tweaks */
+#qrModal{display:none;align-items:center;justify-content:center}
+#qrModal img{box-shadow:0 8px 30px rgba(0,0,0,0.6)}

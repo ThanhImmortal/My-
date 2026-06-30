@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mini Game - Bảng Chữ</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="topbar">
+      <div class="brand">Mini Game — Bảng Chữ</div>
+      <div class="actions">
+        <div class="login">
+          <select id="roleSelect">
+            <option value="guest">Khách</option>
+            <option value="admin">Admin</option>
+          </select>
+          <input id="loginName" placeholder="Tên đăng nhập" style="width:160px;margin-left:8px;padding:6px;border-radius:6px">
+          <button id="loginBtn" class="btn">Đăng nhập</button>
+          <button id="logoutBtn" class="btn" style="display:none">Đăng xuất</button>
+        </div>
+        <div class="round-controls" style="display:flex;align-items:center;margin-left:12px">
+          <div id="roundTimer" class="small">Sẵn sàng</div>
+          <button id="loadBtn" class="btn admin-only">Load</button>
+          <button id="clearBtn" class="btn admin-only">Clear</button>
+          <button id="shareBtn" class="btn">Share (QR)</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <section id="admin" class="card admin-only">
+          <h3>Admin — Nạp bảng & đáp án</h3>
+          <textarea id="adminInput" placeholder="Nhập JSON hoặc mỗi dòng 1 hàng; dòng cuối là đáp án cách nhau bằng dấu phẩy / khoảng trắng"></textarea>
+          <label class="small" style="display:block;margin-top:8px">Đáp án (cách nhau bằng dấu phẩy):</label>
+          <input id="answersInput" type="text" placeholder="ví dụ: BEG, HIJ" style="width:100%;padding:8px;border-radius:6px;margin-top:6px">
+          <p class="note">Ví dụ JSON: {"grid":["ABCD","EFGH"], "answers":["BEG","HIJ"]}</p>
+        </section>
+
+        <section id="playerSection" class="card">
+          <h3>Người chơi</h3>
+          <div class="row">
+              <!-- player names come from login; no manual add -->
+            </div>
+          <div id="players" class="players-list"></div>
+        </section>
+      </aside>
+
+      <main class="main">
+        <section id="boardSection" class="card board-card">
+          <h3>Bảng chữ</h3>
+          <div id="board" class="board"></div>
+          <div id="answersInfo" class="note"></div>
+        </section>
+
+        <section id="scoreSection" class="card">
+          <h3>Bảng xếp hạng</h3>
+          <table id="scoreTable">
+            <thead><tr><th>#</th><th>Tên</th><th>Đúng</th><th>Thời gian</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </section>
+      </main>
+    </div>
+
+    <footer>
+      <p>Phiên bản đơn giản - dữ liệu không gửi ra server. Dùng local cho nhiều người chơi cùng máy.</p>
+    </footer>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
+
+<!-- QR modal -->
+<div id="qrModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;z-index:999">
+  <div style="background:#071021;padding:18px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;align-items:center;gap:12px;max-width:90%;margin:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
+      <strong style="color:#dff6ff">Share URL — QR</strong>
+      <button id="qrClose" class="btn">Close</button>
+    </div>
+    <img id="qrImg" src="" alt="QR" style="width:280px;height:280px;background:#fff;border-radius:6px" />
+    <div style="font-size:13px;color:#9aa4b2">Scan to open the shared URL</div>
+  </div>
+</div>
