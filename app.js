@@ -1,4 +1,8 @@
 // Mini game logic (client-only)
+const sb = window.supabase.createClient(
+  "https://dmltqhbhkzebbvggephy.supabase.co",
+  "sb_publishable_G_yv1ynyBrTRiJkB_wkkPg_xt1YtcpR"
+);
 const adminInput = document.getElementById('adminInput');
 const loadBtn = document.getElementById('loadBtn');
 const clearBtn = document.getElementById('clearBtn');
@@ -572,6 +576,17 @@ function submitPlayer(id){
     }
   }
   p.score = correct; p.done = true;
+  sb.from("scores").insert([
+  {
+    player: p.name,
+    score: p.score,
+    time: p.elapsed
+  }
+])
+.then(({ error }) => {
+  if (error) console.error("Supabase lỗi:", error);
+  else console.log("Đã lưu điểm");
+});
   const card = document.getElementById(`player-${id}`);
   const entry = card.querySelector('.player-answer-entry'); if (entry) entry.disabled = true;
   const removeBtns = card.querySelectorAll('.answer-chip .remove'); removeBtns.forEach(b=>b.disabled=true);
