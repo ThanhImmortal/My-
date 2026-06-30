@@ -157,8 +157,10 @@ function loadSavedState(){
       round.active = true;
       roundTimer.textContent = data.roundTimerText || 'Đang chơi';
       setPlayerInputsEnabled(true);
+      startRoundClock();
     } else {
       round.active = false;
+      stopRoundClock();
       roundTimer.textContent = 'Sẵn sàng';
       setPlayerInputsEnabled(false);
     }
@@ -423,6 +425,37 @@ function addPlayer(name){
 
 let round = {active:false,endAt:0,intervalId:null};
 
+function syncRoundTimers(){
+  if (!players.length) {
+    updateScoreboard();
+    return;
+  }
+
+  players.forEach(p => {
+    if (!p.startedAt || p.done) return;
+    p.elapsed = Date.now() - p.startedAt;
+    const card = document.getElementById(`player-${p.id}`);
+    if (!card) return;
+    const timerEl = card.querySelector('.timer');
+    if (timerEl) timerEl.textContent = formatTime(p.elapsed || 0);
+  });
+  updateScoreboard();
+}
+
+function startRoundClock(){
+  stopRoundClock();
+  if (!round.active) return;
+  round.intervalId = setInterval(syncRoundTimers, 200);
+  syncRoundTimers();
+}
+
+function stopRoundClock(){
+  if (round.intervalId) {
+    clearInterval(round.intervalId);
+    round.intervalId = null;
+  }
+}
+
 // enable or disable all player input fields depending on round
 function setPlayerInputsEnabled(enabled){
   players.forEach(p=>{
@@ -466,6 +499,7 @@ function startRound(){
   round.active = true;
   roundTimer.textContent = `Đang chơi`;
   setPlayerInputsEnabled(true);
+  startRoundClock();
   updateScoreboard();
   saveState();
 }
@@ -483,7 +517,11 @@ function startPlayer(id, timerSpan){
   const p = players.find(x=>x.id===id); if(!p || p.done) return;
   if (p.startedAt) return; // already started
   p.startedAt = Date.now();
+  p.elapsed = 0;
   timerSpan.textContent = '00:00.000';
+  if (round.active) {
+    startRoundClock();
+  }
   updateScoreboard();
   saveState();
 }
@@ -527,6 +565,8 @@ function renderPlayersFromState(){
 }
 
 function updateScoreboard(){
+  if (!scoreTableBody) return;
+
   const ranked = [...players].sort((a,b)=>{
     const doneCompare = Number(b.done) - Number(a.done);
     if (doneCompare !== 0) return doneCompare;
@@ -540,6 +580,13 @@ function updateScoreboard(){
   });
 
   scoreTableBody.innerHTML='';
+  if (!ranked.length) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td colspan="5" class="small">Chưa có người chơi nào</td>';
+    scoreTableBody.appendChild(tr);
+    return;
+  }
+
   ranked.forEach((p,i)=>{
     let status = 'Chưa bắt đầu';
     if (p.done) status = 'Đã nộp';
