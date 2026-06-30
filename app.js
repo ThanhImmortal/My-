@@ -576,6 +576,7 @@ function submitPlayer(id){
     }
   }
   p.score = correct; p.done = true;
+  alert("Đã chạy tới submit");
   fetch("https://script.google.com/macros/s/AKfycbzgM1ZAOUm-veVrvZuwbcsETrXUOL8da0CpFhp6hMSujYOGAz2IobbaX0H0QmNy3Xph/exec", {
   method: "POST",
   headers: {
